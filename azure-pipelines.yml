@@ -1,0 +1,55 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+- dev
+
+pool:
+  vmImage: 'windows-2019'
+
+steps:
+
+- task: UseDotNet@2
+  displayName: 'Sdk Net Core 3.1.x'
+  inputs:
+    version: '3.1.x'
+    packageType: sdk
+
+- task: DotNetCoreCLI@2
+  displayName: 'Start Building Project $(BuildConfiguration)'
+  inputs:
+    command: 'build'
+    arguments: '--configuration $(BuildConfiguration)'
+    projects: '**/*.sln'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Tests Project $(BuildConfiguration)'
+  inputs:
+    command: 'test'
+    projects: '**/*.Tests.csproj'
+    
+- task: DotNetCoreCLI@2
+  displayName: 'Publish Project $(BuildConfiguration) to $(System.ArtifactsDirectory)'
+  inputs:
+    command: publish
+    arguments: '--configuration $(BuildConfiguration) --output publish_output'
+    projects: '**/$(NameProject).csproj'
+    publishWebProjects: false
+    modifyOutputPath: false
+    zipAfterPublish: false
+    
+- task: ArchiveFiles@2
+  displayName: "Archive files"
+  inputs:
+    rootFolderOrFile: "$(System.DefaultWorkingDirectory)/publish_output"
+    includeRootFolder: false
+    archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
+    
+- task: PublishBuildArtifacts@1
+  displayName: 'Artifacts $(System.ArtifactsDirectory)'
+  inputs:
+    PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
+    artifactName: 'drop'
