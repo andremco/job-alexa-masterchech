@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Tasks;
-using JobAlexaMasterChech.Core.Services;
+using JobAlexaMasterChech.Core.Services.WorkContentService;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
@@ -9,25 +8,25 @@ namespace JobAlexaMasterChech.Function
 {
     public class JobTriggerMasterchech
     {
-        private readonly IContentFromWebService _contentFromWebService;
+        private readonly IWorkContentService _workContentService;
 
-        public JobTriggerMasterchech(IContentFromWebService contentFromWebService)
+        public JobTriggerMasterchech(IWorkContentService workContentService)
         {
-            _contentFromWebService = contentFromWebService;
+            _workContentService = workContentService;
         }
 
         [FunctionName("JobTriggerMasterchech")]
         public async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, ILogger logger)
         {
-            if (myTimer.IsPastDue)
-            {
-                logger.LogInformation("Timer is running late!");
-            }
+            //if (myTimer.IsPastDue)
+            //{
+            //    logger.LogInformation("Timer is running late!");
+            //}
             logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
-            var url = await _contentFromWebService.GetLinksAsync();
+            //await _azDataTableService.AddRecipeAsync();
 
-            logger.LogInformation($"Recipes Url: {url}");
+           await _workContentService.SaveRecipes();
         }
     }
 }

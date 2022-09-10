@@ -1,15 +1,13 @@
-﻿using HtmlAgilityPack;
-using JobAlexaMasterChech.Core.Models;
-using JobAlexaMasterChech.Core.Models.Settings;
-using JobAlexaMasterChech.Core.Services;
-using Microsoft.AspNetCore.Hosting;
+﻿using Azure.Data.Tables;
+using HtmlAgilityPack;
+using JobAlexaMasterChech.Core.Models.AppSettings;
+using JobAlexaMasterChech.Core.Services.AzDataTableService;
+using JobAlexaMasterChech.Core.Services.ContentFromWebSiteService;
+using JobAlexaMasterChech.Core.Services.WorkContentService;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
-using System.Reflection;
 
 [assembly: FunctionsStartup(typeof(JobAlexaMasterChech.Function.Startup))]
 namespace JobAlexaMasterChech.Function
@@ -23,16 +21,34 @@ namespace JobAlexaMasterChech.Function
         public override void Configure(IFunctionsHostBuilder builder)
         {
             string recipeUrl = Environment.GetEnvironmentVariable("RecipeUrl");
-            string tagLinkForSearch = Environment.GetEnvironmentVariable("TagLinkForSearch"); 
-            var recipeSettings = new RecipeSettings
+            string tagLinkForSearch = Environment.GetEnvironmentVariable("TagLinkForSearch");
+            string azConnectionDataTable = Environment.GetEnvironmentVariable("AzConnectionDataTable");
+            string azNameDataTable = Environment.GetEnvironmentVariable("AzNameDataTable");
+
+            var recipeSettings = new RecipeAppSettings
             {
                 Url = recipeUrl,
                 TagLinkForSearch = tagLinkForSearch
             };
 
-            builder.Services.AddSingleton<IContentFromWebService, ContentFromWebService>();
+            var tableClient = new TableClient(azConnectionDataTable, azNameDataTable);
+
+            //builder.Services.AddLogging();
+        //    builder.Services.AddSingleton<ILogger>(s
+        //    {
+        //        s.GetService<ILoggerFactory>();
+        //});
+            builder.Services.AddSingleton<IContentFromWebSiteService, ContentFromWebSiteService>();
             builder.Services.AddSingleton(recipeSettings);
             builder.Services.AddSingleton<HtmlWeb>();
+            builder.Services.AddSingleton(tableClient);
+            builder.Services.AddSingleton<IAzDataTableService, AzDataTableService>();
+            builder.Services.AddSingleton<IWorkContentService>(s =>
+            {
+                var factory = s.GetService<ILoggerFactory>();
+                return new WorkContentService(s.GetService<IAzDataTableService>(), s.GetService<IContentFromWebSiteService>(), factory);
+            });
+
         }
     }
 }

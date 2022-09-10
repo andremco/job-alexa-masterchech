@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace JobAlexaMasterChech.Core.Models.Settings
+namespace JobAlexaMasterChech.Core.Models.AppSettings
 {
-    public class RecipeSettings
+    public class RecipeAppSettings
     {
         public string Url { get; set; }
         public string TagLinkForSearch { get; set; } 
