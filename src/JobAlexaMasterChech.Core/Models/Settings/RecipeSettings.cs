@@ -7,5 +7,6 @@ namespace JobAlexaMasterChech.Core.Models.Settings
     public class RecipeSettings
     {
         public string Url { get; set; }
+        public string TagLinkForSearch { get; set; } 
     }
 }

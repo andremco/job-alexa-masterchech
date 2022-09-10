@@ -20,9 +20,10 @@ namespace JobAlexaMasterChech.Core.Services
         public async Task<string> GetLinksAsync()
         {
             var url = _recipeSettings.Url;
+            var tagLinkForSearch = _recipeSettings.TagLinkForSearch;
             var doc = await _htmlWeb.LoadFromWebAsync(url);
 
-            var itemList = doc.DocumentNode.SelectNodes("//a[@class='titulo titulo--bloque']")
+            var itemList = doc.DocumentNode.SelectNodes(tagLinkForSearch)
                   .Select(p => p.Attributes)
                   .ToList();
 

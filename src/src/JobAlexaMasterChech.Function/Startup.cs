@@ -16,12 +16,6 @@ namespace JobAlexaMasterChech.Function
 {
     public class Startup : FunctionsStartup
     {
-        private IConfigurationBuilder _configuration;
-        private IHostingEnvironment _env;
-        public Startup()
-        {
-        }
-
         public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
         {
         }
@@ -29,9 +23,11 @@ namespace JobAlexaMasterChech.Function
         public override void Configure(IFunctionsHostBuilder builder)
         {
             string recipeUrl = Environment.GetEnvironmentVariable("RecipeUrl");
+            string tagLinkForSearch = Environment.GetEnvironmentVariable("TagLinkForSearch"); 
             var recipeSettings = new RecipeSettings
             {
-                Url = recipeUrl
+                Url = recipeUrl,
+                TagLinkForSearch = tagLinkForSearch
             };
 
             builder.Services.AddSingleton<IContentFromWebService, ContentFromWebService>();
