@@ -1,2 +1,2 @@
 # job-alexa-masterchech
-az trigger alexa masterchech
+az function job alexa masterchech
