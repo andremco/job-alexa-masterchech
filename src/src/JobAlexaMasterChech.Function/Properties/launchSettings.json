@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "SkillAlexaMasterChech.Function": {
+    "JobAlexaMasterChech.Function": {
       "commandName": "Project",
       "commandLineArgs": "host start --pause-on-error --nodeDebugPort 7179"
     }
