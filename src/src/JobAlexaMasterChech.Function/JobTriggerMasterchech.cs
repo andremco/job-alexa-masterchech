@@ -16,7 +16,7 @@ namespace JobAlexaMasterChech.Function
         }
 
         [FunctionName("JobTriggerMasterchech")]
-        public async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, ILogger logger)
+        public async Task Run([TimerTrigger("0 */15 * * * *")] TimerInfo myTimer, ILogger logger)
         {
             logger.LogInformation($"Job Alexa MasterChech executed at: {DateTime.Now}");
 
