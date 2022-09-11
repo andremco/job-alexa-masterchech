@@ -18,13 +18,7 @@ namespace JobAlexaMasterChech.Function
         [FunctionName("JobTriggerMasterchech")]
         public async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, ILogger logger)
         {
-            //if (myTimer.IsPastDue)
-            //{
-            //    logger.LogInformation("Timer is running late!");
-            //}
-            logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-
-            //await _azDataTableService.AddRecipeAsync();
+            logger.LogInformation($"Job Alexa MasterChech executed at: {DateTime.Now}");
 
            await _workContentService.SaveRecipes();
         }

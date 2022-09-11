@@ -4,13 +4,13 @@ using System;
 
 namespace JobAlexaMasterChech.Core.Models.DataTableEntities
 {
-    public class RecipeEntity : ITableEntity
+    public class IngredientEntity : ITableEntity
     {
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
-        public string ExternCode { get; set; }
+        public int ExternCode { get; set; }
         public string Description { get; set; }
     }
 }

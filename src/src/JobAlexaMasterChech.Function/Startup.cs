@@ -22,22 +22,19 @@ namespace JobAlexaMasterChech.Function
         {
             string recipeUrl = Environment.GetEnvironmentVariable("RecipeUrl");
             string tagLinkForSearch = Environment.GetEnvironmentVariable("TagLinkForSearch");
+            string tagIngredientForSearch = Environment.GetEnvironmentVariable("TagIngredientForSearch");
             string azConnectionDataTable = Environment.GetEnvironmentVariable("AzConnectionDataTable");
             string azNameDataTable = Environment.GetEnvironmentVariable("AzNameDataTable");
 
             var recipeSettings = new RecipeAppSettings
             {
                 Url = recipeUrl,
-                TagLinkForSearch = tagLinkForSearch
+                TagLinkForSearch = tagLinkForSearch,
+                TagIngredientForSearch = tagIngredientForSearch
             };
 
             var tableClient = new TableClient(azConnectionDataTable, azNameDataTable);
 
-            //builder.Services.AddLogging();
-        //    builder.Services.AddSingleton<ILogger>(s
-        //    {
-        //        s.GetService<ILoggerFactory>();
-        //});
             builder.Services.AddSingleton<IContentFromWebSiteService, ContentFromWebSiteService>();
             builder.Services.AddSingleton(recipeSettings);
             builder.Services.AddSingleton<HtmlWeb>();
@@ -48,7 +45,6 @@ namespace JobAlexaMasterChech.Function
                 var factory = s.GetService<ILoggerFactory>();
                 return new WorkContentService(s.GetService<IAzDataTableService>(), s.GetService<IContentFromWebSiteService>(), factory);
             });
-
         }
     }
 }

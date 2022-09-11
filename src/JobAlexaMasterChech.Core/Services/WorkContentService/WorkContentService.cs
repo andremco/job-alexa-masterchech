@@ -1,7 +1,11 @@
-﻿using JobAlexaMasterChech.Core.Services.AzDataTableService;
+﻿using Azure.Data.Tables;
+using JobAlexaMasterChech.Core.Services.AzDataTableService;
 using JobAlexaMasterChech.Core.Services.ContentFromWebSiteService;
+using JobAlexaMasterChech.Core.Util;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace JobAlexaMasterChech.Core.Services.WorkContentService
@@ -18,12 +22,30 @@ namespace JobAlexaMasterChech.Core.Services.WorkContentService
         {
             _azDataTableService = azDataTableService;
             _contentFromWebSiteService = contentFromWebSiteService;
-            _logger = loggerFactory.CreateLogger("logger");
+            _logger = loggerFactory.CreateLogger("Work");
         }
 
         public async Task SaveRecipes()
         {
-            _logger.LogInformation($"Hello from my service!! {DateTime.Now}");
+            var links = await _contentFromWebSiteService.GetLinksAsync();
+
+            foreach (var link in links)
+            {
+                _logger.LogInformation($"Read url: {link}");
+
+                var content = await _contentFromWebSiteService.GetContentFromLink(link);
+
+                foreach (var ingredient in content)
+                {
+                    var entity = new TableEntity("ingredients", Guid.NewGuid().ToString())
+                        {
+                            { "ExternCode", ingredient.ExternCode },
+                            { "Description", ingredient.Description }
+                        };
+                    //save az data table
+                    await _azDataTableService.AddAsync(entity);
+                }
+            }
         }
     }
 }
