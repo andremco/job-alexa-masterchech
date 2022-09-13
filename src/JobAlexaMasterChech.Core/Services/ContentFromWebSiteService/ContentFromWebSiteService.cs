@@ -73,6 +73,8 @@ namespace JobAlexaMasterChech.Core.Services.ContentFromWebSiteService
                     {
                         ingredients.Add(new IngredientEntity()
                         {
+                            PartitionKey = "ingredient",
+                            RowKey = Guid.NewGuid().ToString(),
                             ExternCode = externCode,
                             Description = description
                         });

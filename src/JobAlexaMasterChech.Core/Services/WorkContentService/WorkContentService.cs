@@ -1,4 +1,5 @@
 ﻿using Azure.Data.Tables;
+using JobAlexaMasterChech.Core.Models.DataTableEntities;
 using JobAlexaMasterChech.Core.Services.AzDataTableService;
 using JobAlexaMasterChech.Core.Services.ContentFromWebSiteService;
 using JobAlexaMasterChech.Core.Util;
@@ -37,13 +38,12 @@ namespace JobAlexaMasterChech.Core.Services.WorkContentService
 
                 foreach (var ingredient in content)
                 {
-                    var entity = new TableEntity("ingredients", Guid.NewGuid().ToString())
-                        {
-                            { "ExternCode", ingredient.ExternCode },
-                            { "Description", ingredient.Description }
-                        };
-                    //save az data table
-                    await _azDataTableService.AddAsync(entity);
+                    var exist = await _azDataTableService.ExistIngredientEntity(ingredient.ExternCode, ingredient.Description);
+                    if (!exist)
+                    {
+                        //save az data table
+                        await _azDataTableService.AddAsync(ingredient);
+                    }
                 }
             }
         }
