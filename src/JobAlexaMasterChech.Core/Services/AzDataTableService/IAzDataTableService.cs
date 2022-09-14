@@ -6,6 +6,6 @@ namespace JobAlexaMasterChech.Core.Services.AzDataTableService
     public interface IAzDataTableService
     {
         Task AddAsync(ITableEntity model);
-        Task<bool> ExistIngredientEntity(int externCode, string description);
+        Task<bool> ExistIngredientEntity(string description);
     }
 }

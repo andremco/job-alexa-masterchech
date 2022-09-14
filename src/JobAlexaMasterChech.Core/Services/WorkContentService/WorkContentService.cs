@@ -38,7 +38,7 @@ namespace JobAlexaMasterChech.Core.Services.WorkContentService
 
                 foreach (var ingredient in content)
                 {
-                    var exist = await _azDataTableService.ExistIngredientEntity(ingredient.ExternCode, ingredient.Description);
+                    var exist = await _azDataTableService.ExistIngredientEntity(ingredient.Description);
                     if (!exist)
                     {
                         //save az data table

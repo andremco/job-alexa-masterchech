@@ -21,9 +21,9 @@ namespace JobAlexaMasterChech.Core.Services.AzDataTableService
             await _tableClient.AddEntityAsync(model);
         }
 
-        public async Task<bool> ExistIngredientEntity(int externCode, string description)
+        public async Task<bool> ExistIngredientEntity(string description)
         {
-            var queryResults = _tableClient.QueryAsync<IngredientEntity>(q => q.ExternCode == externCode && q.Description == description, 10);
+            var queryResults = _tableClient.QueryAsync<IngredientEntity>(q => q.Description == description, 10);
 
             await foreach (Page<IngredientEntity> page in queryResults.AsPages())
             {
