@@ -23,7 +23,7 @@ namespace JobAlexaMasterChech.Function
             {
                 logger.LogInformation($"Job Alexa MasterChech executed at: {DateTime.Now}");
 
-                await _workContentService.SaveRecipes();
+                await _workContentService.SaveContent();
             }
             catch (Exception ex)
             {

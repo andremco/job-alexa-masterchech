@@ -24,21 +24,23 @@ namespace JobAlexaMasterChech.Function
             string tagLinkForSearch = Environment.GetEnvironmentVariable("TagLinkForSearch");
             string tagIngredientForSearch = Environment.GetEnvironmentVariable("TagIngredientForSearch");
             string azConnectionDataTable = Environment.GetEnvironmentVariable("AzConnectionDataTable");
-            string azNameDataTable = Environment.GetEnvironmentVariable("AzNameDataTable");
 
             var recipeSettings = new RecipeAppSettings
             {
                 Url = recipeUrl,
                 TagLinkForSearch = tagLinkForSearch,
-                TagIngredientForSearch = tagIngredientForSearch
+                TagIngredientForSearch = tagIngredientForSearch,
+                AzConnectionDataTable = azConnectionDataTable
             };
 
-            var tableClient = new TableClient(azConnectionDataTable, azNameDataTable);
-
-            builder.Services.AddSingleton<IContentFromWebSiteService, ContentFromWebSiteService>();
+            builder.Services.AddSingleton<IContentFromWebSiteService>(s =>
+            {
+                var factory = s.GetService<ILoggerFactory>();
+                var htmlWeb = s.GetService<HtmlWeb>();
+                return new ContentFromWebSiteService(htmlWeb, recipeSettings, factory);
+            });
             builder.Services.AddSingleton(recipeSettings);
             builder.Services.AddSingleton<HtmlWeb>();
-            builder.Services.AddSingleton(tableClient);
             builder.Services.AddSingleton<IAzDataTableService, AzDataTableService>();
             builder.Services.AddSingleton<IWorkContentService>(s =>
             {

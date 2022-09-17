@@ -26,24 +26,55 @@ namespace JobAlexaMasterChech.Core.Services.WorkContentService
             _logger = loggerFactory.CreateLogger("Work");
         }
 
+        public async Task SaveContent()
+        {
+            await SaveIngredients();
+            await SaveRecipes();
+        }
+
+        public async Task SaveIngredients()
+        {
+            _azDataTableService.TableName = "Ingredients";
+            var ingredients = await _contentFromWebSiteService.GetIngredientContentFromLink();
+
+            foreach (var ingredient in ingredients)
+            {
+                var ingredientEntity = new IngredientEntity
+                {
+                    PartitionKey = "ingredient",
+                    RowKey = Guid.NewGuid().ToString(),
+                    ExternCode = ingredient.ExternCode,
+                    Description = ingredient.Description
+                };
+
+                var exist = await _azDataTableService.ExistIngredientEntity(ingredientEntity.Description);
+                if (!exist)
+                {
+                    //save az data table
+                    await _azDataTableService.AddAsync(ingredientEntity);
+                }
+            }
+        }
+
         public async Task SaveRecipes()
         {
-            var links = await _contentFromWebSiteService.GetLinksAsync();
+            _azDataTableService.TableName = "Recipes";
+            var recipes = await _contentFromWebSiteService.GetRecipeContentFromLink();
 
-            foreach (var link in links)
+            foreach (var recipe in recipes)
             {
-                _logger.LogInformation($"Read url: {link}");
-
-                var content = await _contentFromWebSiteService.GetContentFromLink(link);
-
-                foreach (var ingredient in content)
+                var recipeEntity = new RecipeEntity
                 {
-                    var exist = await _azDataTableService.ExistIngredientEntity(ingredient.Description);
-                    if (!exist)
-                    {
-                        //save az data table
-                        await _azDataTableService.AddAsync(ingredient);
-                    }
+                    PartitionKey = "recipe",
+                    RowKey = Guid.NewGuid().ToString(),
+                    Title = recipe.Title
+                };
+
+                var exist = await _azDataTableService.ExistRecipeEntity(recipeEntity.Title);
+                if (!exist)
+                {
+                    //save az data table
+                    await _azDataTableService.AddAsync(recipeEntity);
                 }
             }
         }

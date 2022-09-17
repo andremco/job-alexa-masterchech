@@ -1,7 +1,9 @@
 ﻿using HtmlAgilityPack;
 using JobAlexaMasterChech.Core.Models.AppSettings;
+using JobAlexaMasterChech.Core.Models.ContentWebSite;
 using JobAlexaMasterChech.Core.Models.DataTableEntities;
 using JobAlexaMasterChech.Core.Util;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +16,20 @@ namespace JobAlexaMasterChech.Core.Services.ContentFromWebSiteService
     {
         public readonly HtmlWeb _htmlWeb;
         public readonly RecipeAppSettings _recipeAppSettings;
+        private readonly ILogger _logger;
 
-        public ContentFromWebSiteService(HtmlWeb htmlWeb, RecipeAppSettings recipesAppSettings)
+        public ContentFromWebSiteService(HtmlWeb htmlWeb, 
+            RecipeAppSettings recipesAppSettings,
+            ILoggerFactory loggerFactory)
         {
             _htmlWeb = htmlWeb;
             _recipeAppSettings = recipesAppSettings;
+            _logger = loggerFactory.CreateLogger("Content");
         }
 
-        public async Task<ICollection<string>> GetLinksAsync()
+        public async Task<ICollection<LinkWebSite>> GetLinksAsync()
         {
+            var linksWebSite = new List<LinkWebSite>();
             var url = _recipeAppSettings.Url;
             var tagLinkForSearch = _recipeAppSettings.TagLinkForSearch;
             var doc = await _htmlWeb.LoadFromWebAsync(url);
@@ -31,60 +38,93 @@ namespace JobAlexaMasterChech.Core.Services.ContentFromWebSiteService
 
             if(nodes != null)
             {
-                var links = nodes.Select(p => p.Attributes)
-                                  //Only valid links
-                                  .Where(x => x["href"] != null && !string.IsNullOrEmpty(x["href"].Value))
-                                  //Take random 5 links!!
-                                  .OrderBy(x => new Random().Next()).Take(5)
-                                  .Select(x => x["href"].Value)
-                                  .ToList();
-
+                var links = nodes
+                                //Only valid links
+                                .Where(p => !string.IsNullOrEmpty(p.InnerText) && p.Attributes["href"] != null && !string.IsNullOrEmpty(p.Attributes["href"].Value))
+                                //Take random 5 links!!
+                                .OrderBy(p => new Random().Next()).Take(5)
+                                .Select(p => new LinkWebSite
+                                {
+                                    Title = p.InnerText,
+                                    Url = p.Attributes["href"].Value
+                                })
+                                .ToList();
                 return links;
             }
 
-            return new List<string>();
+            return linksWebSite;
         }
 
-        public async Task<ICollection<IngredientEntity>> GetContentFromLink(string link)
+        public async Task<ICollection<IngredientWebSite>> GetIngredientContentFromLink()
         {
-            var ingredients = new List<IngredientEntity>();
-            if (string.IsNullOrEmpty(link)) throw new NullReferenceException("link");
+            var ingredients = new List<IngredientWebSite>();
+            var links = await GetLinksAsync();
 
-            var doc = await _htmlWeb.LoadFromWebAsync(link);
+            if (links == null || !links.Any()) throw new NullReferenceException("links");
 
-            var nodes = doc.DocumentNode.SelectNodes("//label[@for]");
-
-            if(nodes != null)
+            foreach (var link in links)
             {
-                var content = nodes
-                                    //Only valid links
-                                    .Where(p => !string.IsNullOrEmpty(p.InnerText))
-                                    //Take random 5 links!!
-                                    .OrderBy(x => new Random().Next()).Take(5)
-                                    .Select(p => Regex.Unescape(p.InnerText))
-                                    .ToList();
+                _logger.LogInformation($"Read url: {link.Url}");
 
-                foreach (var item in content)
+                var doc = await _htmlWeb.LoadFromWebAsync(link.Url);
+
+                var nodes = doc.DocumentNode.SelectNodes(_recipeAppSettings.TagIngredientForSearch);
+
+                if (nodes != null)
                 {
-                    var description = item.RemoveInvalidSentenceFromString();
-                    var externCode = link.GetExternCodeFromUrl();
+                    var content = nodes
+                                        //Only valid links
+                                        .Where(p => !string.IsNullOrEmpty(p.InnerText))
+                                        //Take random 5 links!!
+                                        .OrderBy(x => new Random().Next()).Take(5)
+                                        .Select(p => Regex.Unescape(p.InnerText))
+                                        .ToList();
 
-                    if (!string.IsNullOrEmpty(description) && externCode > 0)
+                    foreach (var item in content)
                     {
-                        ingredients.Add(new IngredientEntity()
-                        {
-                            PartitionKey = "ingredient",
-                            RowKey = Guid.NewGuid().ToString(),
-                            ExternCode = externCode,
-                            Description = description
-                        });
-                    }
-                }
+                        var description = item.RemoveInvalidSentenceFromString();
+                        var externCode = link.Url.GetExternCodeFromUrl();
 
-                return ingredients;
+                        if (!string.IsNullOrEmpty(description) && externCode > 0)
+                        {
+                            ingredients.Add(new IngredientWebSite()
+                            {
+                                ExternCode = externCode,
+                                Description = description
+                            });
+                        }
+                    }
+
+                    return ingredients;
+                }
             }
 
             return ingredients;
+        }
+
+        public async Task<ICollection<RecipeWebSite>> GetRecipeContentFromLink()
+        {
+            var recipes = new List<RecipeWebSite>();
+            var links = await GetLinksAsync();
+
+            if (links == null || !links.Any()) throw new NullReferenceException("recipes");
+
+            foreach (var link in links)
+            {
+                _logger.LogInformation($"Read url: {link.Url}");
+
+                var titleRecipe = link.Title;
+
+                if (!string.IsNullOrEmpty(titleRecipe))
+                {
+                    recipes.Add(new RecipeWebSite()
+                    {
+                        Title = titleRecipe
+                    });
+                }
+            }
+
+            return recipes;
         }
     }
 }

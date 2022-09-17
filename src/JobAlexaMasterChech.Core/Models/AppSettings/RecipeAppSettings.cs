@@ -9,5 +9,6 @@ namespace JobAlexaMasterChech.Core.Models.AppSettings
         public string Url { get; set; }
         public string TagLinkForSearch { get; set; }
         public string TagIngredientForSearch { get; set; }
+        public string AzConnectionDataTable { get; set; }
     }
 }
