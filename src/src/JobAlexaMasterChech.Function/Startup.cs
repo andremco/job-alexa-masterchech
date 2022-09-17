@@ -45,7 +45,7 @@ namespace JobAlexaMasterChech.Function
             builder.Services.AddSingleton<IWorkContentService>(s =>
             {
                 var factory = s.GetService<ILoggerFactory>();
-                return new WorkContentService(s.GetService<IAzDataTableService>(), s.GetService<IContentFromWebSiteService>(), factory);
+                return new WorkContentService(s.GetService<IAzDataTableService>(), s.GetService<IContentFromWebSiteService>(), recipeSettings, factory);
             });
         }
     }

@@ -1,9 +1,11 @@
 ﻿using Azure.Data.Tables;
+using JobAlexaMasterChech.Core.Models.AppSettings;
 using JobAlexaMasterChech.Core.Models.DataTableEntities;
 using JobAlexaMasterChech.Core.Services.AzDataTableService;
 using JobAlexaMasterChech.Core.Services.ContentFromWebSiteService;
 using JobAlexaMasterChech.Core.Util;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,14 +17,17 @@ namespace JobAlexaMasterChech.Core.Services.WorkContentService
     {
         private readonly IAzDataTableService _azDataTableService;
         private readonly IContentFromWebSiteService _contentFromWebSiteService;
+        private readonly RecipeAppSettings _recipeAppSettings;
         private readonly ILogger _logger;
 
         public WorkContentService(IAzDataTableService azDataTableService, 
             IContentFromWebSiteService contentFromWebSiteService,
+            RecipeAppSettings recipeAppSettings,
             ILoggerFactory loggerFactory)
         {
             _azDataTableService = azDataTableService;
             _contentFromWebSiteService = contentFromWebSiteService;
+            _recipeAppSettings = recipeAppSettings;
             _logger = loggerFactory.CreateLogger("Work");
         }
 
@@ -34,7 +39,9 @@ namespace JobAlexaMasterChech.Core.Services.WorkContentService
 
         public async Task SaveIngredients()
         {
-            _azDataTableService.TableName = "Ingredients";
+            var tableClient = new TableClient(_recipeAppSettings.AzConnectionDataTable, "Ingredients");
+            _azDataTableService.TableClient = tableClient;
+
             var ingredients = await _contentFromWebSiteService.GetIngredientContentFromLink();
 
             foreach (var ingredient in ingredients)
@@ -52,13 +59,20 @@ namespace JobAlexaMasterChech.Core.Services.WorkContentService
                 {
                     //save az data table
                     await _azDataTableService.AddAsync(ingredientEntity);
+                    _logger.LogInformation($"Save entity [{JsonConvert.SerializeObject(ingredientEntity)}] at: {DateTime.Now}");
+                }
+                else
+                {
+                    _logger.LogInformation($"Exist entity [{JsonConvert.SerializeObject(ingredientEntity)}] at: {DateTime.Now}");
                 }
             }
         }
 
         public async Task SaveRecipes()
         {
-            _azDataTableService.TableName = "Recipes";
+            var tableClient = new TableClient(_recipeAppSettings.AzConnectionDataTable, "Recipes");
+            _azDataTableService.TableClient = tableClient;
+
             var recipes = await _contentFromWebSiteService.GetRecipeContentFromLink();
 
             foreach (var recipe in recipes)
@@ -75,6 +89,11 @@ namespace JobAlexaMasterChech.Core.Services.WorkContentService
                 {
                     //save az data table
                     await _azDataTableService.AddAsync(recipeEntity);
+                    _logger.LogInformation($"Save entity [{JsonConvert.SerializeObject(recipeEntity)}] at: {DateTime.Now}");
+                }
+                else
+                {
+                    _logger.LogInformation($"Exist entity [{JsonConvert.SerializeObject(recipeEntity)}] at: {DateTime.Now}");
                 }
             }
         }

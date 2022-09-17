@@ -1,6 +1,5 @@
 ﻿using Azure;
 using Azure.Data.Tables;
-using JobAlexaMasterChech.Core.Models.AppSettings;
 using JobAlexaMasterChech.Core.Models.DataTableEntities;
 using System;
 using System.Linq;
@@ -10,24 +9,24 @@ namespace JobAlexaMasterChech.Core.Services.AzDataTableService
 {
     public class AzDataTableService : IAzDataTableService
     {
-        public readonly RecipeAppSettings _recipeAppSettings;
-        public string TableName { get; set; }
-        public AzDataTableService(RecipeAppSettings recipeAppSettings)
+        public TableClient TableClient { get; set; }
+
+        public AzDataTableService()
         {
-            _recipeAppSettings = recipeAppSettings;
         }
 
         public async Task AddAsync(ITableEntity model)
         {
-            var tableClient = new TableClient(_recipeAppSettings.AzConnectionDataTable, TableName);
-            await tableClient.AddEntityAsync(model);
+            if (TableClient == null) throw new NullReferenceException("TableClient");
+
+            await TableClient.AddEntityAsync(model);
         }
 
         public async Task<bool> ExistIngredientEntity(string description)
         {
-            var tableClient = new TableClient(_recipeAppSettings.AzConnectionDataTable, TableName);
+            if (TableClient == null) throw new NullReferenceException("TableClient");
 
-            var queryResults = tableClient.QueryAsync<IngredientEntity>(q => q.Description == description, 1);
+            var queryResults = TableClient.QueryAsync<IngredientEntity>(q => q.Description == description, 1);
 
             await foreach (Page<IngredientEntity> page in queryResults.AsPages())
             {
@@ -41,9 +40,9 @@ namespace JobAlexaMasterChech.Core.Services.AzDataTableService
 
         public async Task<bool> ExistRecipeEntity(string title)
         {
-            var tableClient = new TableClient(_recipeAppSettings.AzConnectionDataTable, TableName);
+            if (TableClient == null) throw new NullReferenceException("TableClient");
 
-            var queryResults = tableClient.QueryAsync<RecipeEntity>(q => q.Title == title, 1);
+            var queryResults = TableClient.QueryAsync<RecipeEntity>(q => q.Title == title, 1);
 
             await foreach (Page<RecipeEntity> page in queryResults.AsPages())
             {
