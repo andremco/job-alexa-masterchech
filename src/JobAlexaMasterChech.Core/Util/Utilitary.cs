@@ -16,7 +16,7 @@ namespace JobAlexaMasterChech.Core.Util
 
         public static string RemoveInvalidSentenceFromString(this string value)
         {
-            string[] blackList = { "Li e aceito a política de privacidade", "\n&frac12;", "\n", "&frac12;", "&#8531" };
+            string[] blackList = { "Li e aceito a política de privacidade", "\n&frac12;", "\n", "&frac12;", "&#8531", "&frac34;", "&frac14;" };
             if (string.IsNullOrEmpty(value)) return string.Empty;
 
             string validResult = Regex.Unescape(value);
